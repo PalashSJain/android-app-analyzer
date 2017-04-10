@@ -1,16 +1,14 @@
 package main;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class CSVHandler {
     private final String csv;
-    private List<Link> links;
+    private Set<Link> links;
     final String __DELIMITER__ = ",";
 
     public CSVHandler(String csv) {
@@ -43,12 +41,12 @@ public class CSVHandler {
 
     }
 
-    public synchronized List<Link> getLinks() {
+    public synchronized Set<Link> getLinks() {
         return links;
     }
 
     public void parse() throws IOException {
-        links = new ArrayList<>();
+        links = new HashSet<>();
         BufferedReader br = null;
         String line = "";
         try {

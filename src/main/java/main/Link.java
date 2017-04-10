@@ -1,66 +1,48 @@
 package main;
 
 import exceptions.IncompatibleURLException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class Link {
-    private List<Release> releases;
     private String linkToRepo;
     private String linkToAPI;
+    private String repoName, author;
 
     public Link(String link) {
         this.linkToRepo = link;
+        breakLink();
     }
 
-    public List<Release> getReleases() throws IncompatibleURLException {
-        releases = new ArrayList<>();
-
-        formURLForAPI();
-        try {
-            String releaseInfo = getReleasesFromGitHub();
-            JSONParser parser = new JSONParser();
-            JSONArray object = (JSONArray) parser.parse(releaseInfo);
-            for (int i = 0; i < object.size(); i++) {
-                Release release = new Release();
-                JSONObject json = (JSONObject) object.get(i);
-                release.setDownloadURL((String) json.get("zipball_url"));
-                release.setName((String) json.get("name"));
-                release.setTagName((String) json.get("tag_name"));
-                release.setCreatedAt((String) json.get("created_at"));
-                release.setPublishedAt((String) json.get("published_at"));
-                releases.add(release);
+    private void breakLink() {
+        if (linkToRepo.startsWith("https://github.com/") || linkToRepo.startsWith("https://gitlab.com/")) {
+            String temp = linkToRepo.replace(".git", "");
+            String[] splits = temp.split("/");
+            if (splits.length >= 5){
+                author = splits[3];
+                repoName = splits[4];
             }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
         }
-        return releases;
     }
 
     public String get() {
         return linkToRepo;
     }
 
-    private synchronized String getReleasesFromGitHub() throws Exception {
+    public synchronized String getReleasesFromGitHub() throws Exception {
         System.out.println("\nSending 'GET' request to URL : " + linkToAPI);
         URL url = new URL(linkToAPI);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("GET");
-        con.setRequestProperty("Authorization", "token 481ef9a17413bfcd2ad1e68943744833cb68f457");
+        con.setRequestProperty("Authorization", "token d1b715fcbcc301258509be76ee7249e3cc573aaf");
         con.setRequestProperty("User-Agent", "PalashSJain");
 
         int responseCode = con.getResponseCode();
@@ -79,17 +61,9 @@ public class Link {
         return response.toString();
     }
 
-    private void formURLForAPI() throws IncompatibleURLException {
-        // linkToAPI  -- https://api.github.com/repos/andraus/BluetoothHidEmu/releases
-        // linkToRepo -- https://github.com/andraus/BluetoothHidEmu
-        if (linkToRepo.startsWith("https://github.com/") || linkToRepo.startsWith("https://gitlab.com/")) {
-            linkToRepo = linkToRepo.replace(".git", "");
-            String[] parts = linkToRepo.split("/");
-            try {
-                linkToAPI = "https://api.github.com/repos/" + parts[3] + "/" + parts[4] + "/releases";
-            } catch (Exception e) {
-                throw new IncompatibleURLException("URL " + linkToRepo + " is not compatible.");
-            }
+    public void formURLForAPI() throws IncompatibleURLException {
+        if (author != null && repoName != null) {
+            linkToAPI = "https://api.github.com/repos/" + author + "/" + repoName + "/releases";
         } else {
             throw new IncompatibleURLException("URL " + linkToRepo + " is not compatible.");
         }
@@ -103,4 +77,9 @@ public class Link {
     public String toString(){
         return linkToRepo;
     }
+
+    public String getRepoName() {
+        return repoName;
+    }
+
 }

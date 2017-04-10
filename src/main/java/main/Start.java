@@ -5,8 +5,8 @@ import exceptions.IncompatibleURLException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by Palash on 4/9/2017.
@@ -16,6 +16,7 @@ public class Start {
     private CSVHandler csvHandler;
 
     public Start() {
+        Utils.initialize();
         csvHandler = new CSVHandler("/app_source.csv");
         repositories = new ArrayList<>();
     }
@@ -31,31 +32,49 @@ public class Start {
 
     private void run() throws IOException {
         csvHandler.parse();
-        List<Link> links = csvHandler.getLinks();
+        Set<Link> links = csvHandler.getLinks();
 
-        for (Link link : links) {
-            List<Release> releases = null;
-            try {
-                releases = link.getReleases();
-            } catch (IncompatibleURLException e) {
-                System.out.println(e.getMessage());
-                continue;
-            }
-            Repository repo = new Repository(releases);
-            repo.setLink(link);
-            repositories.add(repo);
-        }
+        getRelevantRepositories(links);
 
         Collections.sort(repositories);
         csvHandler.write(repositories);
 
+        extractRepositories();
+    }
+
+    private void extractRepositories() {
         for (Repository repository : repositories) {
+            repository.createDownloadsFolder();
             List<Release> releases = repository.getReleases();
             for (Release release : releases) {
-                release.download();
-                release.parseManifest();
-                release.scanForIssues();
-                release.delete();
+                analyzeRelease(release);
+            }
+            if (!Utils.isDebugModeOn()) repository.deleteDownloadsFolder();
+        }
+    }
+
+    private void analyzeRelease(Release release) {
+        try {
+            release.download();
+        } catch (IOException e) {
+            System.out.println("Failed to download " + release.getName() + ". Going to next release.");
+            return;
+        }
+        release.parseManifest();
+        release.scanForIssues();
+        if (!Utils.isDebugModeOn()) release.delete();
+    }
+
+    private void getRelevantRepositories(Set<Link> links) {
+        for (Link link : links) {
+            Repository repo;
+            try {
+                repo = new Repository(link);
+                repo.fetchReleases();
+                repositories.add(repo);
+                if (repositories.size() == 15) break;
+            } catch (Exception e) {
+                System.out.println("Link " + link.get() + " is not eligible.");
             }
         }
     }

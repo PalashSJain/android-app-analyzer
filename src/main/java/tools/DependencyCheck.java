@@ -1,4 +1,6 @@
-package main;
+package tools;
+
+import main.Library;
 
 import java.util.List;
 

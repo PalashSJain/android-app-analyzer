@@ -1,8 +1,12 @@
 package main;
 
-import com.sun.javaws.jnl.LibraryDesc;
-
+import javax.net.ssl.HttpsURLConnection;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -12,17 +16,22 @@ import java.util.List;
  * Created by Palash on 4/9/2017.
  */
 public class Release {
+    private String path;
+    private String zip;
     private int minSDK;
     private int maxSDK;
     private List<AndroidPermission> permissions;
     private List<Library> safeLibraries;
     private List<Library> vulnLibraries;
-    private String path;
     private String downloadURL;
     private String name;
     private String tagName;
     private Date createdAt;
     private Date publishedAt;
+    private String repo;
+
+    public Release(){
+    }
 
     public int getMinSDK() {
         return minSDK;
@@ -45,19 +54,28 @@ public class Release {
     }
 
     public void delete() {
-
+        System.out.println("Deleting " + path);
+        if (Utils.deleteFromDownloadFolder(path)){
+            System.out.println("Deleted.");
+        } else {
+            System.out.println("Failed to delete " + path);
+        }
     }
 
     public void parseManifest() {
 
     }
 
-    public void download() {
-
-    }
-
-    public String getPath() {
-        return path;
+    public synchronized void download() throws IOException {
+        zip = tagName + ".zip";
+        path = repo + "/" + zip;
+        URL url = new URL(getDownloadURL());
+        HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
+        try (InputStream stream = con.getInputStream()) {
+            System.out.println("Downloading " + path);
+            Files.copy(stream, Paths.get("downloads", repo, zip));
+            System.out.println("Downloaded");
+        }
     }
 
     public void scanForIssues() {
@@ -112,5 +130,9 @@ public class Release {
 
     public Date getPublishedAt() {
         return publishedAt;
+    }
+
+    public void setRepo(String repo) {
+        this.repo = repo;
     }
 }
