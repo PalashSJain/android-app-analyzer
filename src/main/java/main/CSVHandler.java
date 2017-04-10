@@ -2,6 +2,7 @@ package main;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -16,7 +17,29 @@ public class CSVHandler {
         this.csv = csv;
     }
 
-    public void write(String file, String[] data) {
+    public void write(List<Repository> repositories) {
+        BufferedWriter br = null;
+        try {
+            br = new BufferedWriter(new FileWriter("new_output.csv"));
+            StringBuilder sb = new StringBuilder();
+            for (Repository repository : repositories) {
+//                for (Release release : repository.getReleases()) {
+//                    sb.append(release.getName());
+//                    sb.append(__DELIMITER__);
+                    sb.append(repository.getLink());
+                    sb.append(__DELIMITER__);
+//                    sb.append(release.getTagName());
+//                    sb.append(__DELIMITER__);
+                    sb.append(repository.getReleases().size());
+//                    sb.append(__DELIMITER__);
+                    sb.append("\n");
+//                }
+            }
+            br.write(sb.toString());
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
 

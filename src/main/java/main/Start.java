@@ -1,8 +1,11 @@
 package main;
 
+import exceptions.IncompatibleURLException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -31,11 +34,21 @@ public class Start {
         List<Link> links = csvHandler.getLinks();
 
         for (Link link : links) {
-            List<Release> releases = link.getReleases();
-            csvHandler.write("out.csv", new String[]{link.get(), String.valueOf(releases.size())});
-            repositories.add(new Repository(releases));
+            List<Release> releases = null;
+            try {
+                releases = link.getReleases();
+            } catch (IncompatibleURLException e) {
+                System.out.println(e.getMessage());
+                continue;
+            }
+            Repository repo = new Repository(releases);
+            repo.setLink(link);
+            repositories.add(repo);
         }
+
         Collections.sort(repositories);
+        csvHandler.write(repositories);
+
         for (Repository repository : repositories) {
             List<Release> releases = repository.getReleases();
             for (Release release : releases) {
