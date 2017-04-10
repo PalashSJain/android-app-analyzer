@@ -56,7 +56,7 @@ public class Release {
     public void delete() {
         System.out.println("Deleting " + path);
         if (Utils.deleteFromDownloadFolder(path)){
-            System.out.println("Deleted.");
+            System.out.println("Deleted " + path);
         } else {
             System.out.println("Failed to delete " + path);
         }
@@ -74,7 +74,7 @@ public class Release {
         try (InputStream stream = con.getInputStream()) {
             System.out.println("Downloading " + path);
             Files.copy(stream, Paths.get("downloads", repo, zip));
-            System.out.println("Downloaded");
+            System.out.println("Downloaded " + path);
         }
     }
 

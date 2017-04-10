@@ -63,6 +63,7 @@ public class Start {
         release.parseManifest();
         release.scanForIssues();
         if (!Utils.isDebugModeOn()) release.delete();
+        System.out.println("");
     }
 
     private void getRelevantRepositories(Set<Link> links) {

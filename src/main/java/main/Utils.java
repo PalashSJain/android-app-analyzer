@@ -8,13 +8,18 @@ import java.util.Properties;
  */
 public class Utils {
     private static Properties properties;
+    private static Properties token;
 
     static void initialize(){
         properties = new Properties();
+        token = new Properties();
         InputStream input = null;
         try {
             input = new FileInputStream("AndroidAppAnalyzer.properties");
             properties.load(input);
+
+            input = new FileInputStream("OAuthToken.properties");
+            token.load(input);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -36,6 +41,14 @@ public class Utils {
 
     public static boolean isDebugModeOn(){
         return Boolean.parseBoolean(properties.getProperty("debug.mode", "false"));
+    }
+
+    public static String getToken(){
+        return token.getProperty("token");
+    }
+
+    public static String getTokenAgent(){
+        return token.getProperty("agent");
     }
 
 }

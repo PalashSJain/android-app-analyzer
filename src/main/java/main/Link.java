@@ -42,8 +42,8 @@ public class Link {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("GET");
-        con.setRequestProperty("Authorization", "token d1b715fcbcc301258509be76ee7249e3cc573aaf");
-        con.setRequestProperty("User-Agent", "PalashSJain");
+        con.setRequestProperty("Authorization", "token " + Utils.getToken());
+        con.setRequestProperty("User-Agent", Utils.getTokenAgent());
 
         int responseCode = con.getResponseCode();
         System.out.println("Response Code : " + responseCode);
