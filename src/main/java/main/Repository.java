@@ -1,6 +1,7 @@
 package main;
 
 import exceptions.IncompatibleURLException;
+import github.ReleaseNotes;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -50,14 +51,19 @@ public class Repository implements Comparable<Repository> {
             JSONParser parser = new JSONParser();
             JSONArray array = (JSONArray) parser.parse(releaseInfo);
             for (int i = 0; i < array.size(); i++) {
+                JSONObject json = (JSONObject) array.get(i);
+
+                ReleaseNotes notes = new ReleaseNotes();
+                notes.setDownloadURL((String) json.get("zipball_url"));
+                notes.setName((String) json.get("name"));
+                notes.setTagName((String) json.get("tag_name"));
+                notes.setCreatedAt((String) json.get("created_at"));
+                notes.setPublishedAt((String) json.get("published_at"));
+
                 Release release = new Release();
                 release.setRepo(link.getRepoName());
-                JSONObject json = (JSONObject) array.get(i);
-                release.setDownloadURL((String) json.get("zipball_url"));
-                release.setName((String) json.get("name"));
-                release.setTagName((String) json.get("tag_name"));
-                release.setCreatedAt((String) json.get("created_at"));
-                release.setPublishedAt((String) json.get("published_at"));
+                release.setReleaseNotes(notes);
+
                 releases.add(release);
             }
 

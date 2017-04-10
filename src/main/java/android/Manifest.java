@@ -1,20 +1,20 @@
-package main;
+package android;
 
 import java.util.List;
 
 /**
  * Created by Palash on 4/9/2017.
  */
-public class AndroidManifest {
+public class Manifest {
     private int minSDK;
-    private List<AndroidPermission> permissions;
+    private List<Permission> permissions;
     private int maxSDK;
 
     public int getMinSDK() {
         return minSDK;
     }
 
-    public List<AndroidPermission> getPermissions() {
+    public List<Permission> getPermissions() {
         return permissions;
     }
 
