@@ -12,13 +12,11 @@ import java.util.Set;
  * Created by Palash on 4/9/2017.
  */
 public class Start {
-    private List<Repository> repositories;
     private CSVHandler csvHandler;
 
     public Start() {
         Utils.initialize();
         csvHandler = new CSVHandler("/app_source.csv");
-        repositories = new ArrayList<>();
     }
 
     public static void main(String[] args) {
@@ -34,51 +32,35 @@ public class Start {
         csvHandler.parse();
         Set<Link> links = csvHandler.getLinks();
 
-        getRelevantRepositories(links);
+        List<Repository> repositories = getRelevantRepositories(links);
 
         Collections.sort(repositories);
         csvHandler.write(repositories);
 
         Utils.createDownloads();
-        extractRepositories();
+        analyzeRepositories(repositories);
     }
 
-    private void extractRepositories() {
+    private void analyzeRepositories(List<Repository> repositories) {
         for (Repository repository : repositories) {
-            repository.createDownloadsFolder();
-            List<Release> releases = repository.getReleases();
-            for (Release release : releases) {
-                analyzeRelease(release);
-            }
-            if (!Utils.isDebugModeOn()) repository.deleteDownloadsFolder();
+            repository.analyzeReleases();
         }
     }
 
-    private void analyzeRelease(Release release) {
-        try {
-            release.download();
-        } catch (IOException e) {
-            System.out.println("Failed to download " + release.getName() + ". Going to next release.");
-            return;
-        }
-        release.parseManifest();
-        release.scanForIssues();
-        if (!Utils.isDebugModeOn()) release.delete();
-        System.out.println("");
-    }
-
-    private void getRelevantRepositories(Set<Link> links) {
+    private List<Repository> getRelevantRepositories(Set<Link> links) {
+        List<Repository> repositories = new ArrayList<>();
         for (Link link : links) {
             Repository repo;
             try {
                 repo = new Repository(link);
                 repo.fetchReleases();
                 repositories.add(repo);
-                if (repositories.size() == 10) break;
+                if (repositories.size() == 3) break;
             } catch (IncompatibleURLException e) {
                 e.printStackTrace();
             }
         }
+        return repositories;
     }
 
 }

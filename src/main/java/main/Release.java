@@ -61,7 +61,7 @@ public class Release {
         }
     }
 
-    public void scanForIssues() {
+    public void scanForLibraries() {
 
     }
 
@@ -83,5 +83,18 @@ public class Release {
 
     public void setRepo(String repo) {
         this.repo = repo;
+    }
+
+    public void analyze() {
+        try {
+            download();
+        } catch (IOException e) {
+            System.out.println("Failed to download " + getName() + ". Going to next release.");
+            return;
+        }
+        parseManifest();
+        scanForLibraries();
+        if (!Utils.isDebugModeOn()) delete();
+        System.out.println("");
     }
 }

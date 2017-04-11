@@ -80,4 +80,13 @@ public class Repository implements Comparable<Repository> {
     public void deleteDownloadsFolder() {
         Utils.deleteFromDownloadFolder(link.getRepoName());
     }
+
+    public void analyzeReleases() {
+        createDownloadsFolder();
+        List<Release> releases = getReleases();
+        for (Release release : releases) {
+            release.analyze();
+        }
+        if (!Utils.isDebugModeOn()) deleteDownloadsFolder();
+    }
 }
