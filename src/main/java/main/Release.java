@@ -23,6 +23,7 @@ public class Release {
     private String repo;
 
     public Release(){
+        this.notes = new ReleaseNotes();
     }
 
     public List<Library> getSafeLibraries() {

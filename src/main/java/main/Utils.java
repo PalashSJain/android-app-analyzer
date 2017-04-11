@@ -30,12 +30,12 @@ public class Utils {
     }
 
     public static boolean deleteFromDownloadFolder(String path) {
-        File f = new File(Utils.getDownloadFolder(), path);
+        File f = new File(getDownloadFolder(), path);
         return !f.exists() || f.delete();
     }
 
     public static boolean createInDownloadFolder(String path) {
-        File r = new File(Utils.getDownloadFolder(), path);
+        File r = new File(getDownloadFolder(), path);
         return r.exists() || r.mkdir();
     }
 
@@ -51,4 +51,8 @@ public class Utils {
         return token.getProperty("agent");
     }
 
+    public static boolean createDownloads() {
+        File f = new File(getDownloadFolder());
+        return f.exists() || f.mkdir();
+    }
 }

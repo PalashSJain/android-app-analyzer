@@ -39,6 +39,7 @@ public class Start {
         Collections.sort(repositories);
         csvHandler.write(repositories);
 
+        Utils.createDownloads();
         extractRepositories();
     }
 
@@ -73,9 +74,9 @@ public class Start {
                 repo = new Repository(link);
                 repo.fetchReleases();
                 repositories.add(repo);
-                if (repositories.size() == 15) break;
-            } catch (Exception e) {
-                System.out.println("Link " + link.get() + " is not eligible.");
+                if (repositories.size() == 10) break;
+            } catch (IncompatibleURLException e) {
+                e.printStackTrace();
             }
         }
     }
