@@ -1,5 +1,6 @@
 package main;
 
+import android.Manifest;
 import github.ReleaseNotes;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -20,6 +21,7 @@ public class Release {
     private List<Library> vulnLibraries;
     private String name;
     private ReleaseNotes notes;
+    private Manifest manifest;
     private String repo;
 
     public Release(){
@@ -44,6 +46,8 @@ public class Release {
     }
 
     public void parseManifest() {
+        manifest = new Manifest();
+//        manifest.set();
         // Get Manifest file
         // Create Manifest object
         // parse manifest: get minSDK, maxSDK, Permissions
@@ -56,17 +60,13 @@ public class Release {
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
         try (InputStream stream = con.getInputStream()) {
             System.out.println("Downloading " + path);
-            Files.copy(stream, Paths.get("downloads", repo, zip));
+            Files.copy(stream, Paths.get(Utils.getDownloadsFolderName(), repo, zip));
             System.out.println("Downloaded " + path);
         }
     }
 
     public void scanForLibraries() {
 
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getName() {
@@ -89,7 +89,7 @@ public class Release {
         try {
             download();
         } catch (IOException e) {
-            System.out.println("Failed to download " + getName() + ". Going to next release.");
+            System.out.println("Failed to download " + getName());
             return;
         }
         parseManifest();

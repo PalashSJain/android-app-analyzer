@@ -39,6 +39,7 @@ public class Start {
 
         Utils.createDownloads();
         analyzeRepositories(repositories);
+        if(!Utils.isDebugModeOn()) Utils.deleteDownloads();
     }
 
     private void analyzeRepositories(List<Repository> repositories) {
