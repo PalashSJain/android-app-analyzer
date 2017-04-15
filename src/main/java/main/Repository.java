@@ -1,12 +1,14 @@
 package main;
 
+import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
 import github.ReleaseNotes;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
-import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,35 +44,34 @@ public class Repository implements Comparable<Repository> {
         this.link = link;
     }
 
-    public void fetchReleases() throws IncompatibleURLException {
+    public void fetchReleases() throws IncompatibleURLException, IOException, ParseException, DoesNotMeetMinCriteriaException {
         releases = new ArrayList<>();
 
         link.formURLForAPI();
-        try {
-            String releaseInfo = link.getReleasesFromGitHub();
-            JSONParser parser = new JSONParser();
-            JSONArray array = (JSONArray) parser.parse(releaseInfo);
-            for (int i = 0; i < array.size(); i++) {
-                JSONObject json = (JSONObject) array.get(i);
+        String releaseInfo = link.getReleasesFromGitHub();
+        JSONParser parser = new JSONParser();
+        JSONArray array = (JSONArray) parser.parse(releaseInfo);
 
-                ReleaseNotes notes = new ReleaseNotes();
-                notes.setDownloadURL((String) json.get("zipball_url"));
-                notes.setName((String) json.get("name"));
-                notes.setTagName((String) json.get("tag_name"));
-                notes.setCreatedAt((String) json.get("created_at"));
-                notes.setPublishedAt((String) json.get("published_at"));
-
-                Release release = new Release();
-                release.setRepo(link.getRepoName());
-                release.setReleaseNotes(notes);
-
-                releases.add(release);
-            }
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            e.printStackTrace();
+        if (array.size() < (Config.getMinNumberOfReleases() * Config.getDifferenceBetweenReleases())) {
+            throw new DoesNotMeetMinCriteriaException("Number of releases for " + link.getRepoName() + " is " + array.size());
         }
+        for (int i = 0; i < array.size(); i += Config.getDifferenceBetweenReleases()) {
+            JSONObject json = (JSONObject) array.get(i);
+
+            ReleaseNotes notes = new ReleaseNotes();
+            notes.setDownloadURL((String) json.get("zipball_url"));
+            notes.setName((String) json.get("name"));
+            notes.setTagName((String) json.get("tag_name"));
+            notes.setCreatedAt((String) json.get("created_at"));
+            notes.setPublishedAt((String) json.get("published_at"));
+
+            Release release = new Release();
+            release.setRepo(link.getRepoName());
+            release.setReleaseNotes(notes);
+
+            releases.add(release);
+        }
+
     }
 
     public void createDownloadsFolder() {
@@ -87,6 +88,6 @@ public class Repository implements Comparable<Repository> {
         for (Release release : releases) {
             release.analyze();
         }
-        if (!Utils.isDebugModeOn()) deleteDownloadsFolder();
+        if (!Config.isDebugModeOn()) deleteDownloadsFolder();
     }
 }

@@ -1,6 +1,8 @@
 package main;
 
+import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ public class Start {
     private CSVHandler csvHandler;
 
     public Start() {
-        Utils.initialize();
+        Config.initialize();
         csvHandler = new CSVHandler("/app_source.csv");
     }
 
@@ -39,7 +41,7 @@ public class Start {
 
         Utils.createDownloads();
         analyzeRepositories(repositories);
-        if(!Utils.isDebugModeOn()) Utils.deleteDownloads();
+        if (!Config.isDebugModeOn()) Utils.deleteDownloads();
     }
 
     private void analyzeRepositories(List<Repository> repositories) {
@@ -50,15 +52,19 @@ public class Start {
 
     private List<Repository> getRelevantRepositories(Set<Link> links) {
         List<Repository> repositories = new ArrayList<>();
-        for (Link link : links) {
-            Repository repo;
-            try {
-                repo = new Repository(link);
-                repo.fetchReleases();
-                repositories.add(repo);
-                if (repositories.size() == 3) break;
-            } catch (IncompatibleURLException e) {
-                e.printStackTrace();
+        if (Config.getMaxRepositories() != 0) {
+            for (Link link : links) {
+                Repository repo;
+                try {
+                    repo = new Repository(link);
+                    repo.fetchReleases();
+                    repositories.add(repo);
+                    if (repositories.size() == Config.getMaxRepositories()) break;
+                } catch (IncompatibleURLException | DoesNotMeetMinCriteriaException e) {
+                    System.out.println(e.getMessage());
+                } catch (ParseException | IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return repositories;

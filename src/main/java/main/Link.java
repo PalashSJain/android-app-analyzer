@@ -3,10 +3,11 @@ package main;
 import exceptions.IncompatibleURLException;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.List;
 
 /**
  * Created by Palash on 4/9/2017.
@@ -36,14 +37,14 @@ public class Link {
         return linkToRepo;
     }
 
-    public synchronized String getReleasesFromGitHub() throws Exception {
+    public synchronized String getReleasesFromGitHub() throws IOException {
         System.out.println("\nSending 'GET' request to URL : " + linkToAPI);
         URL url = new URL(linkToAPI);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("GET");
-        con.setRequestProperty("Authorization", "token " + Utils.getToken());
-        con.setRequestProperty("User-Agent", Utils.getTokenAgent());
+        con.setRequestProperty("Authorization", "token " + Config.getToken());
+        con.setRequestProperty("User-Agent", Config.getTokenAgent());
 
         int responseCode = con.getResponseCode();
         System.out.println("Response Code : " + responseCode);
