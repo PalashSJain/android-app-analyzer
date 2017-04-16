@@ -3,6 +3,7 @@ package main;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Date;
 import java.util.Properties;
 
@@ -51,5 +52,9 @@ public class Config {
 
     public static int getDifferenceBetweenReleases(){
         return Integer.parseInt(properties.getProperty("limitation.difference_between_releases", "0"));
+    }
+
+    public static String getReportsFolder() {
+        return System.getProperty("user.dir") + "/reports/";
     }
 }

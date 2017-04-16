@@ -37,4 +37,45 @@ public class Utils {
         File f = new File(getDownloadsFolderPath());
         return !f.exists() || f.delete();
     }
+
+    public static int getLastFileSeparator(String file) {
+        if (file.contains("*") || file.contains("?")) {
+            int p1 = file.indexOf('*');
+            int p2 = file.indexOf('?');
+            p1 = p1 > 0 ? p1 : file.length();
+            p2 = p2 > 0 ? p2 : file.length();
+            int pos = p1 < p2 ? p1 : p2;
+            pos = file.lastIndexOf('/', pos);
+            return pos;
+        } else {
+            return file.lastIndexOf('/');
+        }
+    }
+
+    public static boolean isTrue(String value) {
+        if (value == null) return false;
+        return value.equalsIgnoreCase("true") ;
+    }
+
+    public static Properties fillWithPropertiesFile(String file) {
+        Properties properties = new Properties();
+        String appDir = System.getProperty("user.dir");
+        InputStream input = null;
+        try {
+            input = new FileInputStream(appDir + "/userdata/" + file);
+            properties.load(input);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+        return properties;
+    }
 }

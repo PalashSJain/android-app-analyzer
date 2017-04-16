@@ -1,5 +1,6 @@
 package main;
 
+import android.Manifest;
 import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
 import github.ReleaseNotes;
@@ -86,7 +87,19 @@ public class Repository implements Comparable<Repository> {
         createDownloadsFolder();
         List<Release> releases = getReleases();
         for (Release release : releases) {
-            release.analyze();
+            try {
+                release.download();
+                release.analyze();
+                for (Manifest manifest : release.getManifests()) {
+                    System.out.println(manifest.getMaxSDK() + " | " + manifest.getMinSDK() + " | " + manifest.getTargetSDK() + " | " + manifest.getPermissions());
+                }
+            } catch (IOException e) {
+                System.out.println("Failed to download " + release.getPath());
+                continue;
+            } finally {
+                if (!Config.isDebugModeOn()) release.delete();
+                System.out.println("");
+            }
         }
         if (!Config.isDebugModeOn()) deleteDownloadsFolder();
     }

@@ -40,14 +40,10 @@ public class Start {
         csvHandler.write(repositories);
 
         Utils.createDownloads();
-        analyzeRepositories(repositories);
-        if (!Config.isDebugModeOn()) Utils.deleteDownloads();
-    }
-
-    private void analyzeRepositories(List<Repository> repositories) {
         for (Repository repository : repositories) {
             repository.analyzeReleases();
         }
+        if (!Config.isDebugModeOn()) Utils.deleteDownloads();
     }
 
     private List<Repository> getRelevantRepositories(Set<Link> links) {

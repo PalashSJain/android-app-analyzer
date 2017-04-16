@@ -2,29 +2,39 @@ package main;
 
 import android.Manifest;
 import github.ReleaseNotes;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+import tools.DependencyCheck;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.io.File;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class Release {
-    private String path;
-    private String zip;
     private List<Library> libraries;
     private ReleaseNotes notes;
-    private Manifest manifest;
+    private List<Manifest> manifests;
     private String repo;
+    private String zip;
+    private final static String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
 
-    public Release(){
+    public Release() {
         this.notes = new ReleaseNotes();
+        this.manifests = new ArrayList<>();
     }
 
     public void delete() {
@@ -36,26 +46,34 @@ public class Release {
         }
     }
 
-    private String getFullPath(){
-        return Utils.getDownloadsFolderPath() +"/"+ getPath();
+    private String getFullPath() {
+        return Utils.getDownloadsFolderPath() + getPath();
     }
 
-    public void scanManifest() {
-        manifest = new Manifest();
-        if (manifest.find(new File(getFullPath()))){
-            manifest.scan();
-        } else {
-            System.out.println("Failed to find Manifest in " + getFullPath());
+    public void scanManifestFiles() {
+        try {
+            ZipFile zipFile = new ZipFile(getFullPath());
+            Enumeration e = zipFile.entries();
+            while (e.hasMoreElements()) {
+                ZipEntry entry = (ZipEntry) e.nextElement();
+                if (entry.getName().endsWith(ANDROID_MANIFEST_XML)) {
+                    DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+                    DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+                    Document doc = dBuilder.parse(zipFile.getInputStream(entry));
+                    doc.getDocumentElement().normalize();
+                    Manifest manifest = new Manifest();
+                    manifest.scan(doc);
+                    manifests.add(manifest);
+                }
+            }
+            zipFile.close();
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            e.printStackTrace();
         }
-//        manifest.set();
-        // Get Manifest file
-        // Create Manifest object
-        // parse manifest: get minSDK, maxSDK, Permissions
     }
 
     public synchronized void download() throws IOException {
         zip = notes.getTagName() + ".zip";
-        path = repo + "/" + zip;
         URL url = new URL(notes.getDownloadURL());
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
         try (InputStream stream = con.getInputStream()) {
@@ -65,8 +83,12 @@ public class Release {
         }
     }
 
-    public void scanForLibraries() {
-
+    public void scanLibraries() {
+        DependencyCheck dc = new DependencyCheck();
+        dc.setProjectName(notes.getTagName());
+        dc.setReportsFolder(Config.getReportsFolder() + "/" + repo + "/" + notes.getTagName());
+        dc.initialize(getFullPath());
+        libraries = dc.scan();
     }
 
     public void setReleaseNotes(ReleaseNotes releaseNotes) {
@@ -82,19 +104,15 @@ public class Release {
     }
 
     public void analyze() {
-        try {
-            download();
-        } catch (IOException e) {
-            System.out.println("Failed to download " + getPath());
-            return;
-        }
-        scanForLibraries();
-        scanManifest();
-        if (!Config.isDebugModeOn()) delete();
-        System.out.println("");
+        scanLibraries();
+        scanManifestFiles();
     }
 
     public String getPath() {
-        return path;
+        return repo + "/" + zip;
+    }
+
+    public List<Manifest> getManifests() {
+        return manifests;
     }
 }
