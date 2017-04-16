@@ -2,6 +2,7 @@ package main;
 
 import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
+import github.Issue;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -41,9 +42,11 @@ public class Start {
 
         Utils.createDownloads();
         for (Repository repository : repositories) {
-            repository.analyzeReleases();
+            //repository.analyzeReleases();
+            repository.analyzeIssues();
         }
         if (!Config.isDebugModeOn()) Utils.deleteDownloads();
+
     }
 
     private List<Repository> getRelevantRepositories(Set<Link> links) {

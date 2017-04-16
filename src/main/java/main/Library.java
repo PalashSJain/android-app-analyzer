@@ -5,6 +5,7 @@ package main;
  */
 public class Library {
     private boolean isVulnerable;
+    private String name;
 
     public boolean isVulnerable() {
         return isVulnerable;
@@ -12,5 +13,21 @@ public class Library {
 
     public void setVulnerable(boolean vulnerable) {
         isVulnerable = vulnerable;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    public boolean equals(Library obj) {
+        return this.getName().equals(obj.getName());
     }
 }

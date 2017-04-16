@@ -1,21 +1,25 @@
 package main;
 
 import exceptions.IncompatibleURLException;
+import github.Issue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class Link {
     private String linkToRepo;
-    private String linkToAPI;
+    private String linkToReleasesAPI;
     private String repoName, author;
+    private String linkToIssuesAPI;
 
     public Link(String link) {
         this.linkToRepo = link;
@@ -37,9 +41,10 @@ public class Link {
         return linkToRepo;
     }
 
-    public synchronized String getReleasesFromGitHub() throws IOException {
-        System.out.println("\nSending 'GET' request to URL : " + linkToAPI);
-        URL url = new URL(linkToAPI);
+    public synchronized String getReleasesFromGitHub() throws IOException, IncompatibleURLException {
+        formURLForReleases();
+        System.out.println("\nSending 'GET' request to URL : " + linkToReleasesAPI);
+        URL url = new URL(linkToReleasesAPI);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
         con.setRequestMethod("GET");
@@ -62,16 +67,24 @@ public class Link {
         return response.toString();
     }
 
-    public void formURLForAPI() throws IncompatibleURLException {
+    private void formURLForReleases() throws IncompatibleURLException {
         if (author != null && repoName != null) {
-            linkToAPI = "https://api.github.com/repos/" + author + "/" + repoName + "/releases";
+            linkToReleasesAPI = getAPI() + "/releases";
         } else {
             throw new IncompatibleURLException("URL " + linkToRepo + " is not compatible.");
         }
     }
 
-    public String getAPI() {
-        return linkToAPI;
+    private void formURLForIssues() throws IncompatibleURLException {
+        if (author != null && repoName != null) {
+            linkToIssuesAPI = getAPI() + "/issues?state=all&sort=created&direction=asc";
+        } else {
+            throw new IncompatibleURLException("URL " + linkToRepo + " is not compatible.");
+        }
+    }
+
+    private String getAPI() {
+        return "https://api.github.com/repos/" + author + "/" + repoName;
     }
 
     @Override
@@ -83,4 +96,28 @@ public class Link {
         return repoName;
     }
 
+    public String lookUpGitHubIssues() throws IOException, IncompatibleURLException {
+        formURLForIssues();
+        System.out.println("\nSending 'GET' request to URL : " + linkToIssuesAPI);
+        URL url = new URL(linkToIssuesAPI);
+        HttpURLConnection con = (HttpURLConnection) url.openConnection();
+
+        con.setRequestMethod("GET");
+        con.setRequestProperty("Authorization", "token " + Config.getToken());
+        con.setRequestProperty("User-Agent", Config.getTokenAgent());
+
+        int responseCode = con.getResponseCode();
+        System.out.println("Response Code : " + responseCode);
+
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(con.getInputStream()));
+        String inputLine;
+        StringBuffer response = new StringBuffer();
+
+        while ((inputLine = in.readLine()) != null) {
+            response.append(inputLine);
+        }
+        in.close();
+        return response.toString();
+    }
 }

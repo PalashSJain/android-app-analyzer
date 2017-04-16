@@ -1,6 +1,7 @@
 package main;
 
 import android.Manifest;
+import github.Issue;
 import github.ReleaseNotes;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -15,9 +16,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -25,16 +24,19 @@ import java.util.zip.ZipFile;
  * Created by Palash on 4/9/2017.
  */
 public class Release {
-    private List<Library> libraries;
-    private ReleaseNotes notes;
+    private Set<Library> libraries;
     private List<Manifest> manifests;
+    private ReleaseNotes notes;
+
     private String repo;
     private String zip;
     private final static String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
+    private Stack<Issue> issues;
 
     public Release() {
         this.notes = new ReleaseNotes();
         this.manifests = new ArrayList<>();
+        this.libraries = new HashSet<>();
     }
 
     public void delete() {
@@ -88,7 +90,8 @@ public class Release {
         dc.setProjectName(notes.getTagName());
         dc.setReportsFolder(Config.getReportsFolder() + "/" + repo + "/" + notes.getTagName());
         dc.initialize(getFullPath());
-        libraries = dc.scan();
+        dc.scan();
+        libraries = dc.getLibraries();
     }
 
     public void setReleaseNotes(ReleaseNotes releaseNotes) {
@@ -103,16 +106,23 @@ public class Release {
         this.repo = repo;
     }
 
-    public void analyze() {
-        scanLibraries();
-        scanManifestFiles();
-    }
-
     public String getPath() {
         return repo + "/" + zip;
     }
 
     public List<Manifest> getManifests() {
         return manifests;
+    }
+
+    public Set<Library> getLibraries() {
+        return libraries;
+    }
+
+    public void setIssues(Stack<Issue> issues) {
+        this.issues = issues;
+    }
+
+    public List<Issue> getIssues() {
+        return issues;
     }
 }

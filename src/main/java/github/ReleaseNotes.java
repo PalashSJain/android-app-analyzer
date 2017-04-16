@@ -2,6 +2,7 @@ package github;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -10,8 +11,8 @@ import java.util.Date;
 public class ReleaseNotes {
     private String downloadURL;
     private String tagName;
-    private Date createdAt;
-    private Date publishedAt;
+    private Calendar createdAt;
+    private Calendar publishedAt;
     private String name;
 
     public void setDownloadURL(String downloadURL) {
@@ -32,27 +33,29 @@ public class ReleaseNotes {
 
     public void setCreatedAt(String createdAt) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'");
+        this.createdAt = Calendar.getInstance();
         try {
-            this.createdAt = formatter.parse(createdAt);
+            this.createdAt.setTimeInMillis(formatter.parse(createdAt).getTime());
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public Date getCreatedAt() {
+    public Calendar getCreatedAt() {
         return createdAt;
     }
 
     public void setPublishedAt(String publishedAt) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'");
+        this.publishedAt = Calendar.getInstance();
         try {
-            this.publishedAt = formatter.parse(publishedAt);
+            this.publishedAt.setTimeInMillis(formatter.parse(publishedAt).getTime());
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public Date getPublishedAt() {
+    public Calendar getPublishedAt() {
         return publishedAt;
     }
 

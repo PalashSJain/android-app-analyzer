@@ -1,7 +1,6 @@
 package tools;
 
 import exceptions.InvalidScanPathException;
-import main.Config;
 import main.Library;
 import main.Utils;
 import org.apache.tools.ant.DirectoryScanner;
@@ -13,29 +12,28 @@ import org.owasp.dependencycheck.dependency.Dependency;
 import org.owasp.dependencycheck.exception.ExceptionCollection;
 import org.owasp.dependencycheck.exception.ReportException;
 import org.owasp.dependencycheck.reporting.ReportGenerator;
-import org.owasp.dependencycheck.utils.InvalidSettingException;
 import org.owasp.dependencycheck.utils.Settings;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class DependencyCheck {
-    List<Library> libraries;
     String folder;
     private String reportsFolder;
     private String projectName;
 
-    public DependencyCheck() {
-        libraries = new ArrayList<>();
-    }
-
-    public List<Library> scan() {
+    public void scan() {
         Engine engine = null;
         try {
             final Set<File> paths = new HashSet<>();
@@ -81,7 +79,6 @@ public class DependencyCheck {
                 engine.cleanup();
             }
         }
-        return libraries;
     }
 
     private void generateReport(Engine engine) throws DatabaseException, ExceptionCollection, ReportException {
@@ -189,5 +186,29 @@ public class DependencyCheck {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public Set<Library> getLibraries() {
+        HashSet<Library> libraries = new HashSet<>();
+        Document doc = null;
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            doc = dBuilder.parse(new File(reportsFolder + "/dependency-check-report.xml"));
+            doc.getDocumentElement().normalize();
+
+            NodeList dependencies = (NodeList) doc.getDocumentElement().getElementsByTagName("dependency");
+            for (int i = 0; i < dependencies.getLength(); i++) {
+                Element dependency = (Element) dependencies.item(i);
+                Library library = new Library();
+                library.setName(dependency.getElementsByTagName("fileName").item(0).getTextContent().split("\\\\|/")[0]);
+                library.setVulnerable(dependency.getElementsByTagName("vulnerability").getLength() != 0);
+                libraries.add(library);
+            }
+        } catch (SAXException | IOException | ParserConfigurationException e) {
+            e.printStackTrace();
+        }
+
+        return libraries;
     }
 }
