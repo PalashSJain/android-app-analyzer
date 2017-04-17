@@ -1,8 +1,8 @@
 package main;
 
+import database.Database;
 import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
-import github.Issue;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
@@ -16,6 +16,7 @@ import java.util.Set;
  */
 public class Start {
     private CSVHandler csvHandler;
+    private static Database db;
 
     public Start() {
         Config.initialize();
@@ -25,6 +26,10 @@ public class Start {
     public static void main(String[] args) {
         Start app = new Start();
         try {
+            db = Database.getInstance();
+            db.purge();
+            db.createDatabase();
+            db.createTables();
             app.run();
         } catch (IOException e) {
             e.printStackTrace();
@@ -42,6 +47,7 @@ public class Start {
 
         Utils.createDownloads();
         for (Repository repository : repositories) {
+            repository.addToDb();
             repository.analyzeReleases();
             repository.analyzeIssues();
         }

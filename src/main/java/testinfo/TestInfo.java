@@ -5,6 +5,7 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
+import database.Database;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -16,11 +17,13 @@ import java.util.List;
  */
 public class TestInfo {
     private final InputStream file;
+    private final Database db;
     private String name;
     private List<MethodInfo> methods;
 
     public TestInfo(InputStream file) {
         this.file = file;
+        db = Database.getInstance();
     }
 
     public String getName() {
@@ -39,6 +42,7 @@ public class TestInfo {
         CompilationUnit cu = JavaParser.parse(file);
         methods = new ArrayList<>();
         new ClassVisitor().visit(cu, null);
+        db.addMethodInfos(this, methods);
     }
 
     private class ClassVisitor extends VoidVisitorAdapter<Void> {

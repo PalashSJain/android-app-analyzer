@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * Created by Palash on 4/10/2017.
  */
-public class ReleaseNotes {
+public class ReleaseNote {
     private String downloadURL;
     private String tagName;
     private Calendar createdAt;

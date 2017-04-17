@@ -1,11 +1,11 @@
 package main;
 
 import android.Manifest;
+import database.Database;
 import github.Issue;
-import github.ReleaseNotes;
+import github.ReleaseNote;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import testinfo.MethodInfo;
 import testinfo.TestInfo;
 import tools.DependencyCheck;
 
@@ -27,7 +27,7 @@ import java.util.zip.ZipFile;
 public class Release {
     private Set<Library> libraries;
     private List<Manifest> manifests;
-    private ReleaseNotes notes;
+    private ReleaseNote notes;
     private List<TestInfo> testInfos;
     private String repo;
 
@@ -35,9 +35,11 @@ public class Release {
     private final static String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
     private static final String TEST_FILE = "Test.java";
     private Stack<Issue> issues;
+    private Database db;
 
     public Release() {
-        this.notes = new ReleaseNotes();
+        db = Database.getInstance();
+        this.notes = new ReleaseNote();
         this.manifests = new ArrayList<>();
         this.libraries = new HashSet<>();
         this.testInfos = new ArrayList<>();
@@ -84,6 +86,9 @@ public class Release {
             zipFile.close();
         } catch (IOException | ParserConfigurationException | SAXException e) {
             e.printStackTrace();
+        } finally {
+            db.addManifests(this, manifests);
+            db.addTestInfos(this, testInfos);
         }
     }
 
@@ -105,13 +110,15 @@ public class Release {
         dc.initialize(getFullPath());
         dc.scan();
         libraries = dc.getLibraries();
+        db.addLibraries(this, libraries);
     }
 
-    public void setReleaseNotes(ReleaseNotes releaseNotes) {
+    public void setReleaseNotes(ReleaseNote releaseNotes) {
         this.notes = releaseNotes;
+        db.addReleaseNote(this, this.notes);
     }
 
-    public ReleaseNotes getReleaseNotes() {
+    public ReleaseNote getReleaseNotes() {
         return notes;
     }
 

@@ -1,9 +1,10 @@
 package main;
 
+import database.Database;
 import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
 import github.Issue;
-import github.ReleaseNotes;
+import github.ReleaseNote;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,9 +20,11 @@ import java.util.*;
 public class Repository implements Comparable<Repository> {
     private List<Release> releases;
     private Link link;
+    private Database db;
 
     public Repository(Link link) {
         this.link = link;
+        db = Database.getInstance();
     }
 
     public List<Release> getReleases() {
@@ -58,7 +61,7 @@ public class Repository implements Comparable<Repository> {
         for (int i = 0; i < array.size(); i += Config.getDifferenceBetweenReleases()) {
             JSONObject json = (JSONObject) array.get(i);
 
-            ReleaseNotes notes = new ReleaseNotes();
+            ReleaseNote notes = new ReleaseNote();
             notes.setDownloadURL((String) json.get("zipball_url"));
             notes.setName((String) json.get("name"));
             notes.setTagName((String) json.get("tag_name"));
@@ -89,6 +92,7 @@ public class Repository implements Comparable<Repository> {
                 release.download();
                 release.scanLibraries();
                 release.scanFiles();
+                db.addRelease(this, release);
             } catch (IOException e) {
                 System.out.println("Failed to download " + release.getPath());
                 continue;
@@ -128,8 +132,6 @@ public class Repository implements Comparable<Repository> {
             } catch (java.text.ParseException e) {
                 e.printStackTrace();
             }
-            issue.setState((String) json.get("state"));
-            issues.push(issue);
         }
         return issues;
     }
@@ -149,9 +151,14 @@ public class Repository implements Comparable<Repository> {
                     }
                 }
                 release.setIssues(issues);
+                db.addIssues(release, issues);
             }
         } catch (IOException | IncompatibleURLException | ParseException e) {
             e.printStackTrace();
         }
+    }
+
+    public void addToDb() {
+        db.addRepository(this);
     }
 }
