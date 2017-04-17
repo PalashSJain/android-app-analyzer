@@ -6,8 +6,6 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -55,7 +53,7 @@ public class TestInfo {
             if (n.getNameAsString().contains("test") || n.getAnnotationByName("Test").isPresent()) {
                 MethodInfo method = new MethodInfo();
                 method.setName(n.getNameAsString());
-                method.setLineOfCode(n.getEnd().get().line - n.getBegin().get().line);
+                method.setLinesOfCode(n.getEnd().get().line - n.getBegin().get().line);
                 methods.add(method);
             }
             super.visit(n, arg);

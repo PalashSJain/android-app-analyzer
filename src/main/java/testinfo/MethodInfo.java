@@ -5,7 +5,7 @@ package testinfo;
  */
 public class MethodInfo {
     private String name;
-    private int lineOfCode;
+    private int linesOfCode;
 
     public String getName() {
         return name;
@@ -15,11 +15,11 @@ public class MethodInfo {
         this.name = name;
     }
 
-    public int getLineOfCode() {
-        return lineOfCode;
+    public int getLinesOfCode() {
+        return linesOfCode;
     }
 
-    public void setLineOfCode(int lineOfCode) {
-        this.lineOfCode = lineOfCode;
+    public void setLinesOfCode(int linesOfCode) {
+        this.linesOfCode = linesOfCode;
     }
 }
