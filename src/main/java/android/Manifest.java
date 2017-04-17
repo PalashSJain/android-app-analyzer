@@ -11,7 +11,7 @@ import java.util.*;
  */
 public class Manifest {
     private int minSDK;
-    private List<Permission> permissions;
+    private List<String> permissions;
     private int targetSDK;
     private int maxSDK;
 
@@ -24,7 +24,7 @@ public class Manifest {
         return minSDK;
     }
 
-    public List<Permission> getPermissions() {
+    public List<String> getPermissions() {
         return permissions;
     }
 
@@ -36,7 +36,7 @@ public class Manifest {
         // Permissions
         NodeList nodes = (NodeList) doc.getDocumentElement().getElementsByTagName("uses-permission");
         for (int i = 0; i < nodes.getLength(); i++) {
-            permissions.add(new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue()));
+            permissions.add(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue());
         }
 
         // SDK
