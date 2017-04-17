@@ -42,7 +42,7 @@ public class Start {
 
         Utils.createDownloads();
         for (Repository repository : repositories) {
-            //repository.analyzeReleases();
+            repository.analyzeReleases();
             repository.analyzeIssues();
         }
         if (!Config.isDebugModeOn()) Utils.deleteDownloads();

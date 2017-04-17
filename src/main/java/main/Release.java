@@ -5,14 +5,15 @@ import github.Issue;
 import github.ReleaseNotes;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import testinfo.MethodInfo;
+import testinfo.TestInfo;
 import tools.DependencyCheck;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -27,16 +28,19 @@ public class Release {
     private Set<Library> libraries;
     private List<Manifest> manifests;
     private ReleaseNotes notes;
-
+    private List<TestInfo> testInfos;
     private String repo;
+
     private String zip;
     private final static String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
+    private static final String TEST_FILE = "Test.java";
     private Stack<Issue> issues;
 
     public Release() {
         this.notes = new ReleaseNotes();
         this.manifests = new ArrayList<>();
         this.libraries = new HashSet<>();
+        this.testInfos = new ArrayList<>();
     }
 
     public void delete() {
@@ -52,7 +56,7 @@ public class Release {
         return Utils.getDownloadsFolderPath() + getPath();
     }
 
-    public void scanManifestFiles() {
+    public void scanFiles() {
         try {
             ZipFile zipFile = new ZipFile(getFullPath());
             Enumeration e = zipFile.entries();
@@ -66,6 +70,15 @@ public class Release {
                     Manifest manifest = new Manifest();
                     manifest.scan(doc);
                     manifests.add(manifest);
+                }
+                if (entry.getName().endsWith(TEST_FILE)) {
+                    TestInfo testInfo = new TestInfo(zipFile.getInputStream(entry));
+                    try {
+                        testInfo.scan();
+                        testInfos.add(testInfo);
+                    } catch (FileNotFoundException fnfe) {
+                        fnfe.printStackTrace();
+                    }
                 }
             }
             zipFile.close();
@@ -125,4 +138,5 @@ public class Release {
     public List<Issue> getIssues() {
         return issues;
     }
+
 }

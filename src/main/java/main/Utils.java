@@ -24,8 +24,8 @@ public class Utils {
     }
 
     public static boolean createInDownloadFolder(String path) {
-        File r = new File(getDownloadsFolderPath(), path);
-        return r.exists() || r.mkdir();
+        File f = new File(getDownloadsFolderPath(), path);
+        return f.exists() || f.mkdir();
     }
 
     public static boolean createDownloads() {

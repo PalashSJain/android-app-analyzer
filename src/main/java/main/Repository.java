@@ -1,7 +1,5 @@
 package main;
 
-import android.Manifest;
-import com.sun.javafx.geom.AreaOp;
 import exceptions.DoesNotMeetMinCriteriaException;
 import exceptions.IncompatibleURLException;
 import github.Issue;
@@ -90,7 +88,7 @@ public class Repository implements Comparable<Repository> {
             try {
                 release.download();
                 release.scanLibraries();
-                release.scanManifestFiles();
+                release.scanFiles();
             } catch (IOException e) {
                 System.out.println("Failed to download " + release.getPath());
                 continue;
