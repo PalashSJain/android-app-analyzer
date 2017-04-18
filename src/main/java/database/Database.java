@@ -85,12 +85,9 @@ public class Database {
                 "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
 
         String qRelease = "Create table IF NOT EXISTS Release(" +
-                "ReleaseID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
-                "Repo VARCHAR(50) NOT NULL, " +
-                "TestInfoID INT, " +
-                "ManifestID INT, " +
-                "ReleaseNoteID INT, " +
-                "IssueID INT)";
+                "release_id integer PRIMARY KEY, " +
+                "repository_id int, " +
+                "FOREIGN KEY (repository_id) REFERENCES Repository (repository_id))";
 
         String qRepository = "Create table IF NOT EXISTS Repository(" +
                 "repository_id integer PRIMARY KEY," +
@@ -147,13 +144,13 @@ public class Database {
         }
     }
 
-    public int addRepository(Repository repository) {
+    public int addRepository(String repositoryName) {
         int resultId = -1;
         try {
             open();
             String query = "Insert into Repository (repository_name) values(?)";
             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
-            statement.setString(1, repository.getRepoName());
+            statement.setString(1, repositoryName);
             statement.executeUpdate();
 
             ResultSet rs = statement.getGeneratedKeys();
@@ -167,12 +164,32 @@ public class Database {
             e.printStackTrace();
         } finally {
             close();
-            return resultId;
         }
+        return resultId;
     }
 
-    public void addRelease(Repository repository, Release release) {
+    public int addRelease(int repositoryId) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into Release (repository_id) values(?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, repositoryId);
+            statement.executeUpdate();
 
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()){
+                resultId=rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public void addLibraries(Release release, Set<Library> libraries) {

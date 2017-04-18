@@ -93,9 +93,9 @@ public class Repository implements Comparable<Repository> {
         for (Release release : releases) {
             try {
                 release.download();
+                release.setId(db.addRelease(getId()));
 //                release.scanLibraries();
                 release.scanFiles();
-                db.addRelease(this, release);
             } catch (IOException e) {
                 System.out.println("Failed to download " + release.getPath());
                 continue;
@@ -161,15 +161,15 @@ public class Repository implements Comparable<Repository> {
         }
     }
 
-    public void addToDb() {
-        this.id = db.addRepository(this);
-    }
-
     public String getRepoName() {
         return repoName;
     }
 
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

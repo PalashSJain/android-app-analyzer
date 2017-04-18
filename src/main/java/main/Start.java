@@ -50,7 +50,7 @@ public class Start {
 
         Utils.createDownloads();
         for (Repository repository : repositories) {
-            repository.addToDb();
+            repository.setId(db.addRepository(repository.getRepoName()));
             repository.analyzeReleases();
             repository.analyzeIssues();
         }

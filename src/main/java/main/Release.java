@@ -37,6 +37,7 @@ public class Release {
     private static final String TEST_FILE = "Test.java";
     private Stack<Issue> issues;
     private Database db;
+    private int id;
 
     public Release() {
         db = Database.getInstance();
@@ -147,4 +148,11 @@ public class Release {
         return issues;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
 }
