@@ -58,7 +58,7 @@ public class Database {
 //        }
     }
 
-    public void createTables() {
+    public void createTables() throws SQLException, ClassNotFoundException {
         String qMethodInfo = "Create table IF NOT EXISTS MethodInfo(" +
                 "MethodInfoID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
                 "Name VARCHAR(50) NOT NULL, " +
@@ -70,6 +70,49 @@ public class Database {
                 "MethodInfoID INT, " +
                 "FOREIGN KEY (MethodInfoID) REFERENCES MethodInfo (MethodInfoID))";
 
+        String qPermission = "Create table if not exists Permission(" +
+                "PermissionID int AUTO_INCREMENT PRIMARY KEY NOT NULL," +
+                "Name VARCHAR(50) NOT NULL)";
+
+        String qManifest = "Create table IF NOT EXISTS Manifest(" +
+                "ManifestID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "MinSDK INT, " +
+                "MaxSDK INT, " +
+                "TargetSDK INT, " +
+                "PermissionID INT, " +
+                "FOREIGN KEY (PermissionID) REFERENCES Permission (PermissionID))";
+
+        String qReleaseNote = "Create table IF NOT EXISTS ReleaseNote(" +
+                "ReleaseNoteID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "DownloadURL varchar(50), " +
+                "CreatedAt Date, " +
+                "PublishedAt Date, " +
+                "TagName varchar(50), " +
+                "Name varchar(50))";
+
+        String qIssue = "Create table IF NOT EXISTS Issue(" +
+                "IssueID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "State varchar(50), " +
+                "CreatedAt Date, " +
+                "UpdatedAt Date, " +
+                "ClosedAt Date)";
+
+        String qRelease = "Create table IF NOT EXISTS Release(" +
+                "ReleaseID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "Repo VARCHAR(50) NOT NULL, " +
+                "TestInfoID INT, " +
+                "FOREIGN KEY (TestInfoID) REFERENCES TestInfo (TestInfoID)," +
+                "ManifestID INT, " +
+                "FOREIGN KEY (ManifestID) REFERENCES Manifest (ManifestID)," +
+                "ReleaseNoteID INT, " +
+                "FOREIGN KEY (ReleaseNoteID) REFERENCES ReleaseNote (ReleaseNoteID)," +
+                "IssueID INT, " +
+                "FOREIGN KEY (IssueID) REFERENCES Issue (IssueID))";
+
+        String qRepository = "Create table IF NOT EXISTS Repository(" +
+                "ReleaseID INT, " +
+                "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
+
         Statement stmt = null;
         try {
             open();
@@ -78,8 +121,24 @@ public class Database {
 
             stmt = connection.createStatement();
             stmt.executeUpdate(qTestInfo);
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qPermission);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qManifest);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qReleaseNote);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qIssue);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qRelease);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qRepository);
         } finally {
             close();
         }
