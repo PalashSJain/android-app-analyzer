@@ -54,16 +54,16 @@ public class Database {
         String qPermission = "Create table if not exists Permission(" +
                 "PermissionID int AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
                 "PName VARCHAR(50) NOT NULL UNIQUE, " +
-                "ManifestID INT," +
-                "FOREIGN KEY (ManifestID) REFERENCES Manifest (ManifestID))";
+                "manifest_id INT," +
+                "FOREIGN KEY (manifest_id) REFERENCES Manifest (manifest_id))";
 
         String qManifest = "Create table IF NOT EXISTS Manifest(" +
-                "ManifestID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "manifest_id integer PRIMARY KEY NOT NULL, " +
                 "MinSDK INT, " +
                 "MaxSDK INT, " +
                 "TargetSDK INT, " +
-                "ReleaseID INT," +
-                "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
         String qReleaseNote = "Create table IF NOT EXISTS ReleaseNote(" +
                 "ReleaseNoteID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
@@ -154,8 +154,8 @@ public class Database {
             statement.executeUpdate();
 
             ResultSet rs = statement.getGeneratedKeys();
-            if (rs.next()){
-                resultId=rs.getInt(1);
+            if (rs.next()) {
+                resultId = rs.getInt(1);
             }
             rs.close();
         } catch (ClassNotFoundException e) {
@@ -178,8 +178,8 @@ public class Database {
             statement.executeUpdate();
 
             ResultSet rs = statement.getGeneratedKeys();
-            if (rs.next()){
-                resultId=rs.getInt(1);
+            if (rs.next()) {
+                resultId = rs.getInt(1);
             }
             rs.close();
         } catch (ClassNotFoundException e) {
@@ -193,10 +193,6 @@ public class Database {
     }
 
     public void addLibraries(Release release, Set<Library> libraries) {
-
-    }
-
-    public void addManifests(Release release, List<Manifest> manifests) {
 
     }
 
@@ -229,5 +225,32 @@ public class Database {
         open();
 
         close();
+    }
+
+    public int addManifest(int releaseId, Manifest manifest) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into Manifest (release_id, MinSDK, MaxSDK, TargetSDK) values(?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, releaseId);
+            statement.setInt(2, manifest.getMinSDK());
+            statement.setInt(3, manifest.getMaxSDK());
+            statement.setInt(4, manifest.getTargetSDK());
+            statement.executeUpdate();
+
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 }

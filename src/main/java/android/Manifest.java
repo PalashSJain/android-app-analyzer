@@ -1,23 +1,28 @@
 package android;
 
+import database.Database;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
+import java.sql.SQLException;
 import java.util.*;
 
 /**
  * Created by Palash on 4/9/2017.
  */
 public class Manifest {
+    private final Database db;
     private int minSDK;
     private List<Permission> permissions;
     private int targetSDK;
     private int maxSDK;
+    private int id;
 
 
     public Manifest() {
         this.permissions = new ArrayList<>();
+        db = Database.getInstance();
     }
 
     public int getMinSDK() {
@@ -36,7 +41,13 @@ public class Manifest {
         // Permissions
         NodeList nodes = (NodeList) doc.getDocumentElement().getElementsByTagName("uses-permission");
         for (int i = 0; i < nodes.getLength(); i++) {
-            permissions.add(new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue()));
+            Permission p = new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue());
+            try {
+                db.addPermission(this, p);
+                permissions.add(p);
+            } catch (SQLException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
 
         // SDK
@@ -66,4 +77,11 @@ public class Manifest {
         return targetSDK;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
+    }
 }
