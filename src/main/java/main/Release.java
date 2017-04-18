@@ -72,8 +72,8 @@ public class Release {
                     Document doc = dBuilder.parse(zipFile.getInputStream(entry));
                     doc.getDocumentElement().normalize();
                     Manifest manifest = new Manifest();
-                    manifest.scan(doc);
                     manifest.setId(db.addManifest(getId(), manifest));
+                    manifest.scan(doc);
                     manifests.add(manifest);
                 }
                 if (entry.getName().endsWith(TEST_FILE)) {

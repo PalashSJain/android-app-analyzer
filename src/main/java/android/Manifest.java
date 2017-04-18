@@ -43,7 +43,7 @@ public class Manifest {
         for (int i = 0; i < nodes.getLength(); i++) {
             Permission p = new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue());
             try {
-                db.addPermission(this, p);
+                p.setId(db.addPermission(getId(), p));
                 permissions.add(p);
             } catch (SQLException | ClassNotFoundException e) {
                 e.printStackTrace();

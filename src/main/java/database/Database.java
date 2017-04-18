@@ -6,12 +6,15 @@ import github.Issue;
 import github.ReleaseNote;
 import main.Library;
 import main.Release;
-import main.Repository;
 import testinfo.MethodInfo;
 import testinfo.TestInfo;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.*;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.Stack;
 
@@ -51,9 +54,9 @@ public class Database {
                 "ReleaseID INT," +
                 "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
 
-        String qPermission = "Create table if not exists Permission(" +
-                "PermissionID int AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
-                "PName VARCHAR(50) NOT NULL UNIQUE, " +
+        String qPermission = "Create table IF not exists Permission(" +
+                "permission_id integer PRIMARY KEY NOT NULL, " +
+                "PName VARCHAR(50) NOT NULL, " +
                 "manifest_id INT," +
                 "FOREIGN KEY (manifest_id) REFERENCES Manifest (manifest_id))";
 
@@ -93,6 +96,10 @@ public class Database {
                 "repository_id integer PRIMARY KEY," +
                 "repository_name text NOT NULL UNIQUE)";
 
+        String qAndroidPermissions = "Create table if not exists AndroidPermissions(" +
+                "android_permission_id integer primary key, " +
+                "android_permission_name text not null unique)";
+
         Statement stmt = null;
         try {
             open();
@@ -119,6 +126,26 @@ public class Database {
 
             stmt = connection.createStatement();
             stmt.executeUpdate(qRepository);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qAndroidPermissions);
+
+            try (Scanner scanner = new Scanner(new File(getClass().getClassLoader().getResource("permissions.csv").getFile()))) {
+                StringBuilder q = new StringBuilder("");
+                q.append("Insert into AndroidPermissions (android_permission_name) values ");
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    q.append("('");
+                    q.append(line);
+                    q.append("'),");
+                }
+                q.deleteCharAt(q.lastIndexOf(","));
+                scanner.close();
+                stmt = connection.createStatement();
+                stmt.execute(q.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         } finally {
             close();
         }
@@ -221,10 +248,29 @@ public class Database {
 
     }
 
-    public void addPermission(Manifest manifest, Permission p) throws SQLException, ClassNotFoundException {
-        open();
+    public int addPermission(int manifestId, Permission p) throws SQLException, ClassNotFoundException {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into Permission (manifest_id, PName) values(?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, manifestId);
+            statement.setString(2, p.getName());
+            statement.executeUpdate();
 
-        close();
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public int addManifest(int releaseId, Manifest manifest) {
