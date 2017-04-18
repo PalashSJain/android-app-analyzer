@@ -20,10 +20,13 @@ import java.util.*;
 public class Repository implements Comparable<Repository> {
     private List<Release> releases;
     private Link link;
+    private String repoName;
     private Database db;
+    private int id;
 
     public Repository(Link link) {
         this.link = link;
+        this.repoName = this.link.getRepoName();
         db = Database.getInstance();
     }
 
@@ -90,7 +93,7 @@ public class Repository implements Comparable<Repository> {
         for (Release release : releases) {
             try {
                 release.download();
-                release.scanLibraries();
+//                release.scanLibraries();
                 release.scanFiles();
                 db.addRelease(this, release);
             } catch (IOException e) {
@@ -159,6 +162,14 @@ public class Repository implements Comparable<Repository> {
     }
 
     public void addToDb() {
-        db.addRepository(this);
+        this.id = db.addRepository(this);
+    }
+
+    public String getRepoName() {
+        return repoName;
+    }
+
+    public int getId() {
+        return id;
     }
 }

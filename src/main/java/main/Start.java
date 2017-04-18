@@ -6,6 +6,7 @@ import exceptions.IncompatibleURLException;
 import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,9 +29,11 @@ public class Start {
         try {
             db = Database.getInstance();
             db.purge();
-            db.createDatabase();
             db.createTables();
             app.run();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+            System.out.println("Exception in Database connection.");
         } catch (IOException e) {
             e.printStackTrace();
         }
