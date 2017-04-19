@@ -107,6 +107,7 @@ public class Release {
                     TestInfo testInfo = new TestInfo(zipFile.getInputStream(entry));
                     try {
                         testInfo.scan();
+                        testInfo.setId(db.addTestInfos(getId(), testInfo));
                         testInfos.add(testInfo);
                     } catch (FileNotFoundException fnfe) {
                         fnfe.printStackTrace();
@@ -117,7 +118,6 @@ public class Release {
         } catch (IOException | ParserConfigurationException | SAXException e) {
             e.printStackTrace();
         } finally {
-            db.addTestInfos(this, testInfos);
         }
     }
 

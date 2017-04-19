@@ -20,6 +20,7 @@ public class TestInfo {
     private final Database db;
     private String name;
     private List<MethodInfo> methods;
+    private int id;
 
     public TestInfo(InputStream file) {
         this.file = file;
@@ -43,6 +44,14 @@ public class TestInfo {
         methods = new ArrayList<>();
         new ClassVisitor().visit(cu, null);
         db.addMethodInfos(this, methods);
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 
     private class ClassVisitor extends VoidVisitorAdapter<Void> {

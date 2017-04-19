@@ -47,10 +47,10 @@ public class Database {
                 "FOREIGN KEY (TestInfoID) REFERENCES TestInfo (TestInfoID))";
 
         String qTestInfo = "Create table IF NOT EXISTS TestInfo(" +
-                "TestInfoID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "TestInfoID INTEGER PRIMARY KEY, " +
                 "Name VARCHAR(50) NOT NULL, " +
-                "ReleaseID INT," +
-                "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
         String qPermission = "Create table IF not exists Permission(" +
                 "permission_id integer PRIMARY KEY NOT NULL, " +
@@ -222,8 +222,29 @@ public class Database {
 
     }
 
-    public void addTestInfos(Release release, List<TestInfo> testInfos) {
+    public int addTestInfos(int release_id, TestInfo testInfo) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into TestInfo (name, release_id) values(?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, testInfo.getName());
+            statement.setInt(2, release_id);
+            statement.executeUpdate();
 
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public void addMethodInfos(TestInfo testInfo, List<MethodInfo> methods) {
