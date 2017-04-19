@@ -43,7 +43,6 @@ public class TestInfo {
         CompilationUnit cu = JavaParser.parse(file);
         methods = new ArrayList<>();
         new ClassVisitor().visit(cu, null);
-        db.addMethodInfos(this, methods);
     }
 
     public void setId(int id) {
@@ -56,17 +55,12 @@ public class TestInfo {
 
     private class ClassVisitor extends VoidVisitorAdapter<Void> {
         @Override
-        public void visit(ClassOrInterfaceDeclaration n, Void arg) {
-            name = n.getNameAsString();
-            super.visit(n, arg);
-        }
-
-        @Override
         public void visit(MethodDeclaration n, Void arg) {
             if (n.getNameAsString().contains("test") || n.getAnnotationByName("Test").isPresent()) {
                 MethodInfo method = new MethodInfo();
                 method.setName(n.getNameAsString());
                 method.setLinesOfCode(n.getEnd().get().line - n.getBegin().get().line);
+                method.setId(db.addMethodInfos(getId(), method));
                 methods.add(method);
             }
             super.visit(n, arg);

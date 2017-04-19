@@ -1,5 +1,6 @@
 package database;
 
+import android.BuildGradle;
 import android.Manifest;
 import android.Permission;
 import github.Issue;
@@ -39,21 +40,29 @@ public class Database {
     }
 
     public void createTables() throws SQLException, ClassNotFoundException {
+        String qBuildGradle = "Create table if not exists BuildGradle(" +
+                "build_gradle_id INTEGER PRIMARY KEY, " +
+                "MinSDK INT, " +
+                "MaxSDK INT, " +
+                "TargetSDK INT, " +
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
+
         String qMethodInfo = "Create table IF NOT EXISTS MethodInfo(" +
-                "MethodInfoID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "method_info_id INTEGER PRIMARY KEY, " +
                 "Name VARCHAR(50) NOT NULL, " +
                 "LinesOfCode INT(3), " +
-                "TestInfoID INT," +
-                "FOREIGN KEY (TestInfoID) REFERENCES TestInfo (TestInfoID))";
+                "test_info_id INT," +
+                "FOREIGN KEY (test_info_id) REFERENCES TestInfo (test_info_id))";
 
         String qTestInfo = "Create table IF NOT EXISTS TestInfo(" +
-                "TestInfoID INTEGER PRIMARY KEY, " +
+                "test_info_id INTEGER PRIMARY KEY, " +
                 "Name VARCHAR(50) NOT NULL, " +
                 "release_id INT," +
                 "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
         String qPermission = "Create table IF not exists Permission(" +
-                "permission_id integer PRIMARY KEY NOT NULL, " +
+                "permission_id integer PRIMARY KEY, " +
                 "PName VARCHAR(50) NOT NULL, " +
                 "manifest_id INT," +
                 "FOREIGN KEY (manifest_id) REFERENCES Manifest (manifest_id))";
@@ -129,6 +138,9 @@ public class Database {
             stmt = connection.createStatement();
             stmt.executeUpdate(qAndroidPermissions);
 
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qBuildGradle);
+
             try (Scanner scanner = new Scanner(new File(getClass().getClassLoader().getResource("permissions.csv").getFile()))) {
                 StringBuilder q = new StringBuilder("");
                 q.append("Insert into AndroidPermissions (android_permission_name) values ");
@@ -151,7 +163,26 @@ public class Database {
     }
 
     public void purge() {
-
+        try {
+            open();
+            Statement statement = connection.createStatement();
+            statement.execute("DROP TABLE IF EXISTS ReleaseNote");
+            statement.execute("DROP TABLE IF EXISTS Permission");
+            statement.execute("DROP TABLE IF EXISTS MethodInfo");
+            statement.execute("DROP TABLE IF EXISTS Issue");
+            statement.execute("DROP TABLE IF EXISTS BuildGradle");
+            statement.execute("DROP TABLE IF EXISTS TestInfo");
+            statement.execute("DROP TABLE IF EXISTS Release");
+            statement.execute("DROP TABLE IF EXISTS Manifest");
+            statement.execute("DROP TABLE IF EXISTS Repository");
+            statement.execute("DROP TABLE IF EXISTS AndroidPermissions");
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        close();
     }
 
     public void open() throws ClassNotFoundException, SQLException {
@@ -247,9 +278,22 @@ public class Database {
         return resultId;
     }
 
-    public void addMethodInfos(TestInfo testInfo, List<MethodInfo> methods) {
+    public int addMethodInfos(int test_info_id, MethodInfo method) {
+        int resultId = -1;
         try {
             open();
+            String query = "Insert into MethodInfo (name, linesOfCode, test_info_id) values(?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, method.getName());
+            statement.setInt(2, method.getLinesOfCode());
+            statement.setInt(3, test_info_id);
+            statement.executeUpdate();
+
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {
@@ -257,7 +301,7 @@ public class Database {
         } finally {
             close();
         }
-
+        return resultId;
     }
 
     public int addReleaseNote(int release_id, ReleaseNote note) {
@@ -355,6 +399,33 @@ public class Database {
             statement.setInt(2, manifest.getMinSDK());
             statement.setInt(3, manifest.getMaxSDK());
             statement.setInt(4, manifest.getTargetSDK());
+            statement.executeUpdate();
+
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
+    }
+
+    public int addBuildGradle(int id, BuildGradle buildGradle) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into BuildGradle (release_id, MinSDK, MaxSDK, TargetSDK) values(?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setInt(1, id);
+            statement.setInt(2, buildGradle.getMinSdkVersion());
+            statement.setInt(3, buildGradle.getMaxSdkVersion());
+            statement.setInt(4, buildGradle.getTargetSdkVersion());
             statement.executeUpdate();
 
             ResultSet rs = statement.getGeneratedKeys();

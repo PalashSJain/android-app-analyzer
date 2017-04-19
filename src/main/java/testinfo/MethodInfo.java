@@ -6,6 +6,7 @@ package testinfo;
 public class MethodInfo {
     private String name;
     private int linesOfCode;
+    private int id;
 
     public String getName() {
         return name;
@@ -21,5 +22,13 @@ public class MethodInfo {
 
     public void setLinesOfCode(int linesOfCode) {
         this.linesOfCode = linesOfCode;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 }

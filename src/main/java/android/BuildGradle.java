@@ -4,29 +4,38 @@ package android;
  * Created by Palash on 4/18/2017.
  */
 public class BuildGradle {
-    private String minSdkVersion, maxSdkVersion, targetSdkVersion;
+    private int minSdkVersion, maxSdkVersion, targetSdkVersion;
+    private int id;
 
-    public String getTargetSdkVersion() {
+    public int getTargetSdkVersion() {
         return targetSdkVersion;
     }
 
     public void setTargetSdkVersion(String targetSdkVersion) {
-        this.targetSdkVersion = targetSdkVersion;
+        this.targetSdkVersion = Integer.parseInt(targetSdkVersion);
     }
 
-    public String getMinSdkVersion() {
+    public int getMinSdkVersion() {
         return minSdkVersion;
     }
 
     public void setMinSdkVersion(String minSdkVersion) {
-        this.minSdkVersion = minSdkVersion;
+        this.minSdkVersion = Integer.parseInt(minSdkVersion);
     }
 
-    public String getMaxSdkVersion() {
+    public int getMaxSdkVersion() {
         return maxSdkVersion;
     }
 
     public void setMaxSdkVersion(String maxSdkVersion) {
-        this.maxSdkVersion = maxSdkVersion;
+        this.maxSdkVersion = Integer.parseInt(maxSdkVersion);
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 }

@@ -88,26 +88,29 @@ public class Release {
                     BuildGradle buildGradle = new BuildGradle();
                     while ((line = br.readLine()) != null) {
                         if (line.contains("minSdkVersion")) {
-                            Pattern pattern = Pattern.compile("minSdkVersion (.*?)");
+                            Pattern pattern = Pattern.compile("minSdkVersion (.*?) ");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setMinSdkVersion(matcher.group(1));
                         } else if (line.contains("maxSdkVersion")) {
-                            Pattern pattern = Pattern.compile("maxSdkVersion (.*?)");
+                            Pattern pattern = Pattern.compile("maxSdkVersion (.*?) ");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setMaxSdkVersion(matcher.group(1));
                         } else if (line.contains("targetSdkVersion")) {
-                            Pattern pattern = Pattern.compile("targetSdkVersion (.*?)");
+                            Pattern pattern = Pattern.compile("targetSdkVersion (.*?) ");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setTargetSdkVersion(matcher.group(1));
                         }
                     }
+                    buildGradle.setId(db.addBuildGradle(getId(), buildGradle));
                     buildGradles.add(buildGradle);
                 }
                 if (entry.getName().endsWith(TEST_FILE)) {
                     TestInfo testInfo = new TestInfo(zipFile.getInputStream(entry));
                     try {
-                        testInfo.scan();
+                        String n = entry.getName();
+                        testInfo.setName(n.substring(n.lastIndexOf("/")+1));
                         testInfo.setId(db.addTestInfos(getId(), testInfo));
+                        testInfo.scan();
                         testInfos.add(testInfo);
                     } catch (FileNotFoundException fnfe) {
                         fnfe.printStackTrace();
