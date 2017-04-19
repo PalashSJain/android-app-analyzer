@@ -94,6 +94,7 @@ public class Repository implements Comparable<Repository> {
             try {
                 release.download();
                 release.setId(db.addRelease(getId()));
+                release.addReleaseNoteToDB();
 //                release.scanLibraries();
                 release.scanFiles();
             } catch (IOException e) {

@@ -55,7 +55,6 @@ public class Start {
             repository.analyzeIssues();
         }
         if (!Config.isDebugModeOn()) Utils.deleteDownloads();
-
     }
 
     private List<Repository> getRelevantRepositories(Set<Link> links) {

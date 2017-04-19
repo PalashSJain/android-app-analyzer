@@ -78,8 +78,7 @@ public class Release {
                     Document doc = dBuilder.parse(zipFile.getInputStream(entry));
                     doc.getDocumentElement().normalize();
                     Manifest manifest = new Manifest();
-                    manifest.setId(db.addManifest(getId(), manifest));
-                    manifest.scan(doc);
+                    manifest.scan(doc, getId());
                     manifests.add(manifest);
                 }
                 if (entry.getName().endsWith(BUILD_GRADLE)) {
@@ -145,7 +144,6 @@ public class Release {
 
     public void setReleaseNotes(ReleaseNote releaseNotes) {
         this.notes = releaseNotes;
-        db.addReleaseNote(this, this.notes);
     }
 
     public ReleaseNote getReleaseNotes() {
@@ -182,5 +180,9 @@ public class Release {
 
     public int getId() {
         return id;
+    }
+
+    public void addReleaseNoteToDB() {
+        this.notes.setId(db.addReleaseNote(getId(), this.notes));
     }
 }

@@ -37,19 +37,7 @@ public class Manifest {
         return maxSDK;
     }
 
-    public void scan(Document doc) {
-        // Permissions
-        NodeList nodes = (NodeList) doc.getDocumentElement().getElementsByTagName("uses-permission");
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Permission p = new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue());
-            try {
-                p.setId(db.addPermission(getId(), p));
-                permissions.add(p);
-            } catch (SQLException | ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-
+    public void scan(Document doc, int id) {
         // SDK
         NodeList usesSDK = doc.getDocumentElement().getElementsByTagName("uses-sdk");
         NamedNodeMap sdkMap;
@@ -62,6 +50,19 @@ public class Manifest {
             minSDK = 0;
             maxSDK = 0;
             targetSDK = 0;
+        }
+        setId(db.addManifest(getId(), this));
+
+        // Permissions
+        NodeList nodes = (NodeList) doc.getDocumentElement().getElementsByTagName("uses-permission");
+        for (int i = 0; i < nodes.getLength(); i++) {
+            Permission p = new Permission(nodes.item(i).getAttributes().getNamedItem("android:name").getNodeValue());
+            try {
+                p.setId(db.addPermission(getId(), p));
+                permissions.add(p);
+            } catch (SQLException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
         }
     }
 

@@ -6,11 +6,11 @@ import github.Issue;
 import github.ReleaseNote;
 import main.Library;
 import main.Release;
+import org.sqlite.SQLiteException;
 import testinfo.MethodInfo;
 import testinfo.TestInfo;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.*;
 import java.util.List;
@@ -69,14 +69,15 @@ public class Database {
                 "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
         String qReleaseNote = "Create table IF NOT EXISTS ReleaseNote(" +
-                "ReleaseNoteID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "ReleaseNoteID integer PRIMARY KEY, " +
                 "DownloadURL varchar(50), " +
                 "CreatedAt Date, " +
                 "PublishedAt Date, " +
                 "TagName varchar(50), " +
                 "Name varchar(50), " +
-                "ReleaseID INT," +
-                "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_ida" +
+                "))";
 
         String qIssue = "Create table IF NOT EXISTS Issue(" +
                 "IssueID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
@@ -94,7 +95,7 @@ public class Database {
 
         String qRepository = "Create table IF NOT EXISTS Repository(" +
                 "repository_id integer PRIMARY KEY," +
-                "repository_name text NOT NULL UNIQUE)";
+                "repository_name VARCHAR (50))";
 
         String qAndroidPermissions = "Create table if not exists AndroidPermissions(" +
                 "android_permission_id integer primary key, " +
@@ -143,7 +144,7 @@ public class Database {
                 scanner.close();
                 stmt = connection.createStatement();
                 stmt.execute(q.toString());
-            } catch (IOException e) {
+            } catch (IOException | SQLiteException e) {
                 e.printStackTrace();
             }
         } finally {
@@ -240,8 +241,33 @@ public class Database {
 
     }
 
-    public void addReleaseNote(Release release, ReleaseNote releaseNotes) {
+    public int addReleaseNote(int release_id, ReleaseNote note) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into ReleaseNote (DownloadURL, CreatedAt, PublishedAt, TagName, Name, release_id) values(?, ?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, note.getDownloadURL());
+            statement.setDate(2, new Date(note.getCreatedAt().getTimeInMillis()));
+            statement.setDate(3, new Date(note.getPublishedAt().getTimeInMillis()));
+            statement.setString(4, note.getTagName());
+            statement.setString(5, note.getName());
+            statement.setInt(6, release_id);
+            statement.executeUpdate();
 
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public void addIssues(Release release, Stack<Issue> issues) {
