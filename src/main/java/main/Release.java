@@ -1,5 +1,6 @@
 package main;
 
+import android.BuildGradle;
 import android.Manifest;
 import database.Database;
 import github.Issue;
@@ -19,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -26,10 +29,12 @@ import java.util.zip.ZipFile;
  * Created by Palash on 4/9/2017.
  */
 public class Release {
+    private static final String BUILD_GRADLE = "build.gradle";
     private Set<Library> libraries;
     private List<Manifest> manifests;
     private ReleaseNote notes;
     private List<TestInfo> testInfos;
+    private List<BuildGradle> buildGradles;
     private String repo;
 
     private String zip;
@@ -45,6 +50,7 @@ public class Release {
         this.manifests = new ArrayList<>();
         this.libraries = new HashSet<>();
         this.testInfos = new ArrayList<>();
+        this.buildGradles = new ArrayList<>();
     }
 
     public void delete() {
@@ -75,6 +81,28 @@ public class Release {
                     manifest.setId(db.addManifest(getId(), manifest));
                     manifest.scan(doc);
                     manifests.add(manifest);
+                }
+                if (entry.getName().endsWith(BUILD_GRADLE)) {
+                    InputStream inputStream = zipFile.getInputStream(entry);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+                    String line;
+                    BuildGradle buildGradle = new BuildGradle();
+                    while ((line = br.readLine()) != null) {
+                        if (line.contains("minSdkVersion")) {
+                            Pattern pattern = Pattern.compile("minSdkVersion (.*?)");
+                            Matcher matcher = pattern.matcher(line);
+                            if (matcher.find()) buildGradle.setMinSdkVersion(matcher.group(1));
+                        } else if (line.contains("maxSdkVersion")) {
+                            Pattern pattern = Pattern.compile("maxSdkVersion (.*?)");
+                            Matcher matcher = pattern.matcher(line);
+                            if (matcher.find()) buildGradle.setMaxSdkVersion(matcher.group(1));
+                        } else if (line.contains("targetSdkVersion")) {
+                            Pattern pattern = Pattern.compile("targetSdkVersion (.*?)");
+                            Matcher matcher = pattern.matcher(line);
+                            if (matcher.find()) buildGradle.setTargetSdkVersion(matcher.group(1));
+                        }
+                    }
+                    buildGradles.add(buildGradle);
                 }
                 if (entry.getName().endsWith(TEST_FILE)) {
                     TestInfo testInfo = new TestInfo(zipFile.getInputStream(entry));
