@@ -51,7 +51,7 @@ public class Manifest {
             maxSDK = 0;
             targetSDK = 0;
         }
-        setId(db.addManifest(getId(), this));
+        setId(db.addManifest(id, this));
 
         // Permissions
         NodeList nodes = (NodeList) doc.getDocumentElement().getElementsByTagName("uses-permission");

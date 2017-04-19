@@ -149,13 +149,13 @@ public class Repository implements Comparable<Repository> {
                 for (int j = allIssues.size() - 1; j >= 0; j--) {
                     Issue issue = allIssues.pop();
                     if (issue.getCreatedAt().getTimeInMillis() < release.getReleaseNotes().getPublishedAt().getTimeInMillis()) {
+                        db.addIssues(release.getId(), issue);
                         issues.push(issue);
                     } else {
                         break;
                     }
                 }
                 release.setIssues(issues);
-                db.addIssues(release, issues);
             }
         } catch (IOException | IncompatibleURLException | ParseException e) {
             e.printStackTrace();

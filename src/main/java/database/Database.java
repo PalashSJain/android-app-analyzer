@@ -13,10 +13,8 @@ import testinfo.TestInfo;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.Stack;
+import java.sql.Date;
+import java.util.*;
 
 /**
  * Created by Palash on 4/17/2017.
@@ -80,13 +78,13 @@ public class Database {
                 "))";
 
         String qIssue = "Create table IF NOT EXISTS Issue(" +
-                "IssueID INT AUTO_INCREMENT PRIMARY KEY NOT NULL, " +
+                "issue_id INTEGER PRIMARY KEY, " +
                 "State varchar(50), " +
                 "CreatedAt Date, " +
                 "UpdatedAt Date, " +
                 "ClosedAt Date," +
-                "ReleaseID INT," +
-                "FOREIGN KEY (ReleaseID) REFERENCES Release (ReleaseID))";
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
         String qRelease = "Create table IF NOT EXISTS Release(" +
                 "release_id integer PRIMARY KEY, " +
@@ -270,8 +268,35 @@ public class Database {
         return resultId;
     }
 
-    public void addIssues(Release release, Stack<Issue> issues) {
+    public int addIssues(int release_id, Issue issue) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into Issue (State, CreatedAt, UpdatedAt, ClosedAt, release_id) values(?, ?, ?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, issue.getState());
+            statement.setDate(2, new Date(issue.getCreatedAt().getTimeInMillis()));
+            statement.setDate(3, new Date(issue.getUpdatedAt().getTimeInMillis()));
+            Calendar t = issue.getClosedAt();
+            if (t != null)
+                statement.setDate(4, new Date(t.getTimeInMillis()));
+            else statement.setDate(4, null);
+            statement.setInt(5, release_id);
+            statement.executeUpdate();
 
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public int addPermission(int manifestId, Permission p) throws SQLException, ClassNotFoundException {
