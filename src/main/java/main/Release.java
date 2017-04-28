@@ -18,7 +18,6 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -88,15 +87,15 @@ public class Release {
                     BuildGradle buildGradle = new BuildGradle();
                     while ((line = br.readLine()) != null) {
                         if (line.contains("minSdkVersion")) {
-                            Pattern pattern = Pattern.compile("minSdkVersion (.*?) ");
+                            Pattern pattern = Pattern.compile("minSdkVersion (\\d+)");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setMinSdkVersion(matcher.group(1));
                         } else if (line.contains("maxSdkVersion")) {
-                            Pattern pattern = Pattern.compile("maxSdkVersion (.*?) ");
+                            Pattern pattern = Pattern.compile("maxSdkVersion (\\d+)");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setMaxSdkVersion(matcher.group(1));
                         } else if (line.contains("targetSdkVersion")) {
-                            Pattern pattern = Pattern.compile("targetSdkVersion (.*?) ");
+                            Pattern pattern = Pattern.compile("targetSdkVersion (\\d+)");
                             Matcher matcher = pattern.matcher(line);
                             if (matcher.find()) buildGradle.setTargetSdkVersion(matcher.group(1));
                         }
@@ -130,7 +129,7 @@ public class Release {
         HttpsURLConnection con = (HttpsURLConnection) url.openConnection();
         try (InputStream stream = con.getInputStream()) {
             System.out.println("Downloading " + getPath());
-            Files.copy(stream, Paths.get(Utils.getDownloadsFolderName(), repo, zip));
+            Files.copy(stream, Paths.get(Utils.getDownloadsFolderPath(), repo, zip));
             System.out.println("Downloaded " + getPath());
         }
     }
@@ -141,8 +140,7 @@ public class Release {
         dc.setReportsFolder(Config.getReportsFolder() + "/" + repo + "/" + notes.getTagName());
         dc.initialize(getFullPath());
         dc.scan();
-        libraries = dc.getLibraries();
-        db.addLibraries(this, libraries);
+        libraries = dc.getLibraries(getId());
     }
 
     public void setReleaseNotes(ReleaseNote releaseNotes) {

@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.sql.Date;
 import java.util.*;
 
 /**
@@ -99,6 +100,7 @@ public class Repository implements Comparable<Repository> {
                 release.scanFiles();
             } catch (IOException e) {
                 System.out.println("Failed to download " + release.getPath());
+                e.printStackTrace();
                 continue;
             } finally {
                 if (!Config.isDebugModeOn()) release.delete();
@@ -120,16 +122,15 @@ public class Repository implements Comparable<Repository> {
                 String d = (String) json.get("closed_at");
                 Calendar instance = Calendar.getInstance();
                 if (d != null) {
-                    Date date = new SimpleDateFormat(pattern).parse(d);
-                    instance.setTime(date);
-                    issue.setClosedAt((Calendar) instance.clone());
+                    Date date = new Date(new SimpleDateFormat(pattern).parse(d).getTime());
+                    issue.setClosedAt(date);
                 }
 
-                instance.setTime(new SimpleDateFormat(pattern).parse((String) json.get("updated_at")));
-                issue.setUpdatedAt((Calendar) instance.clone());
+                Date date = new Date(new SimpleDateFormat(pattern).parse((String) json.get("updated_at")).getTime());
+                issue.setUpdatedAt(date);
 
-                instance.setTime(new SimpleDateFormat(pattern).parse((String) json.get("created_at")));
-                issue.setCreatedAt((Calendar) instance.clone());
+                date = new Date(new SimpleDateFormat(pattern).parse((String) json.get("created_at")).getTime());
+                issue.setCreatedAt(date);
 
                 issue.setState((String) json.get("state"));
                 issues.push(issue);
@@ -148,7 +149,7 @@ public class Repository implements Comparable<Repository> {
                 Stack<Issue> issues = new Stack<>();
                 for (int j = allIssues.size() - 1; j >= 0; j--) {
                     Issue issue = allIssues.pop();
-                    if (issue.getCreatedAt().getTimeInMillis() < release.getReleaseNotes().getPublishedAt().getTimeInMillis()) {
+                    if (issue.getCreatedAt().compareTo(release.getReleaseNotes().getPublishedAt()) > 0) {
                         db.addIssues(release.getId(), issue);
                         issues.push(issue);
                     } else {

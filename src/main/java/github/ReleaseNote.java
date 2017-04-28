@@ -3,7 +3,7 @@ package github;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.sql.Date;
 
 /**
  * Created by Palash on 4/10/2017.
@@ -11,8 +11,8 @@ import java.util.Date;
 public class ReleaseNote {
     private String downloadURL;
     private String tagName;
-    private Calendar createdAt;
-    private Calendar publishedAt;
+    private Date createdAt;
+    private Date publishedAt;
     private String name;
     private int id;
 
@@ -33,30 +33,28 @@ public class ReleaseNote {
     }
 
     public void setCreatedAt(String createdAt) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'");
-        this.createdAt = Calendar.getInstance();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         try {
-            this.createdAt.setTimeInMillis(formatter.parse(createdAt).getTime());
+            this.createdAt = new Date(formatter.parse(createdAt).getTime());
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public Calendar getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
     public void setPublishedAt(String publishedAt) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-mm-dd'T'HH:mm:ss'Z'");
-        this.publishedAt = Calendar.getInstance();
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
         try {
-            this.publishedAt.setTimeInMillis(formatter.parse(publishedAt).getTime());
+            this.publishedAt = new Date(formatter.parse(publishedAt).getTime());
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
-    public Calendar getPublishedAt() {
+    public Date getPublishedAt() {
         return publishedAt;
     }
 

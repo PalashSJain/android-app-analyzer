@@ -1,5 +1,6 @@
 package tools;
 
+import database.Database;
 import exceptions.InvalidScanPathException;
 import main.Library;
 import main.Utils;
@@ -32,6 +33,11 @@ public class DependencyCheck {
     String folder;
     private String reportsFolder;
     private String projectName;
+    private Database db;
+
+    public DependencyCheck(){
+        db = Database.getInstance();
+    }
 
     public void scan() {
         Engine engine = null;
@@ -188,7 +194,7 @@ public class DependencyCheck {
         this.projectName = projectName;
     }
 
-    public Set<Library> getLibraries() {
+    public Set<Library> getLibraries(int id) {
         HashSet<Library> libraries = new HashSet<>();
         Document doc = null;
         try {
@@ -203,6 +209,7 @@ public class DependencyCheck {
                 Library library = new Library();
                 library.setName(dependency.getElementsByTagName("fileName").item(0).getTextContent().split("\\\\|/")[0]);
                 library.setVulnerable(dependency.getElementsByTagName("vulnerability").getLength() != 0);
+                library.setId(db.addLibrary(id, library));
                 libraries.add(library);
             }
         } catch (SAXException | IOException | ParserConfigurationException e) {

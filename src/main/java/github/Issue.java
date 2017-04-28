@@ -1,14 +1,14 @@
 package github;
 
 import java.util.Calendar;
-import java.util.Date;
+import java.sql.Date;
 
 /**
  * Created by Palash on 4/16/2017.
  */
 public class Issue {
     private String state;
-    private Calendar createdAt, updatedAt, closedAt;
+    private Date createdAt, updatedAt, closedAt;
 
     public String getState() {
         return state;
@@ -18,27 +18,27 @@ public class Issue {
         this.state = state;
     }
 
-    public Calendar getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Calendar createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 
-    public Calendar getUpdatedAt() {
+    public Date getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(Calendar updatedAt) {
+    public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
 
-    public Calendar getClosedAt() {
+    public Date getClosedAt() {
         return closedAt;
     }
 
-    public void setClosedAt(Calendar closedAt) {
+    public void setClosedAt(Date closedAt) {
         this.closedAt = closedAt;
     }
 

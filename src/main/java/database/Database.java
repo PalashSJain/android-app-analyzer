@@ -14,7 +14,6 @@ import testinfo.TestInfo;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
-import java.sql.Date;
 import java.util.*;
 
 /**
@@ -95,6 +94,13 @@ public class Database {
                 "release_id INT," +
                 "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
 
+        String qLibrary = "Create table IF NOT EXISTS Library(" +
+                "library_id INTEGER PRIMARY KEY, " +
+                "Vulnerable Boolean, " +
+                "Name Varchar(50), " +
+                "release_id INT," +
+                "FOREIGN KEY (release_id) REFERENCES Release (release_id))";
+
         String qRelease = "Create table IF NOT EXISTS Release(" +
                 "release_id integer PRIMARY KEY, " +
                 "repository_id int, " +
@@ -131,6 +137,9 @@ public class Database {
 
             stmt = connection.createStatement();
             stmt.executeUpdate(qRelease);
+
+            stmt = connection.createStatement();
+            stmt.executeUpdate(qLibrary);
 
             stmt = connection.createStatement();
             stmt.executeUpdate(qRepository);
@@ -249,8 +258,30 @@ public class Database {
         return resultId;
     }
 
-    public void addLibraries(Release release, Set<Library> libraries) {
+    public int addLibrary(int release_id, Library library) {
+        int resultId = -1;
+        try {
+            open();
+            String query = "Insert into Library (name, Vulnerable, release_id) values(?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+            statement.setString(1, library.getName());
+            statement.setInt(2, library.isVulnerable() ? 1 : 0);
+            statement.setInt(3, release_id);
+            statement.executeUpdate();
 
+            ResultSet rs = statement.getGeneratedKeys();
+            if (rs.next()) {
+                resultId = rs.getInt(1);
+            }
+            rs.close();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            close();
+        }
+        return resultId;
     }
 
     public int addTestInfos(int release_id, TestInfo testInfo) {
@@ -311,8 +342,8 @@ public class Database {
             String query = "Insert into ReleaseNote (DownloadURL, CreatedAt, PublishedAt, TagName, Name, release_id) values(?, ?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, note.getDownloadURL());
-            statement.setDate(2, new Date(note.getCreatedAt().getTimeInMillis()));
-            statement.setDate(3, new Date(note.getPublishedAt().getTimeInMillis()));
+            statement.setString(2, String.valueOf(note.getCreatedAt()));
+            statement.setString(3, String.valueOf(note.getPublishedAt()));
             statement.setString(4, note.getTagName());
             statement.setString(5, note.getName());
             statement.setInt(6, release_id);
@@ -340,12 +371,11 @@ public class Database {
             String query = "Insert into Issue (State, CreatedAt, UpdatedAt, ClosedAt, release_id) values(?, ?, ?, ?, ?)";
             PreparedStatement statement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             statement.setString(1, issue.getState());
-            statement.setDate(2, new Date(issue.getCreatedAt().getTimeInMillis()));
-            statement.setDate(3, new Date(issue.getUpdatedAt().getTimeInMillis()));
-            Calendar t = issue.getClosedAt();
-            if (t != null)
-                statement.setDate(4, new Date(t.getTimeInMillis()));
-            else statement.setDate(4, null);
+            statement.setString(2, String.valueOf(issue.getCreatedAt()));
+            statement.setString(3, String.valueOf(issue.getUpdatedAt()));
+            java.sql.Date d = issue.getClosedAt();
+            if (d != null) statement.setString(4, String.valueOf(d));
+            else statement.setString(4, null);
             statement.setInt(5, release_id);
             statement.executeUpdate();
 

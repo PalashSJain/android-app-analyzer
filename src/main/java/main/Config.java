@@ -15,7 +15,7 @@ public class Config {
     private static Properties properties;
     private static Properties token;
 
-    static void initialize() {
+    public static void initialize() {
         properties = new Properties();
         token = new Properties();
         InputStream input = null;

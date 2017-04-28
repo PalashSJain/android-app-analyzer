@@ -69,7 +69,7 @@ public class Manifest {
     private int setZeroIfNotPresent(String attr, NamedNodeMap sdkMap) {
         try {
             return Integer.parseInt(sdkMap.getNamedItem(attr).getNodeValue());
-        } catch (NullPointerException npe) {
+        } catch (Exception e) {
             return 0;
         }
     }

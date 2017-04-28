@@ -6,6 +6,7 @@ package main;
 public class Library {
     private boolean isVulnerable;
     private String name;
+    private int id;
 
     public boolean isVulnerable() {
         return isVulnerable;
@@ -29,5 +30,13 @@ public class Library {
 
     public boolean equals(Library obj) {
         return this.getName().equals(obj.getName());
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getId() {
+        return id;
     }
 }
